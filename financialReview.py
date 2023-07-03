@@ -1,5 +1,6 @@
 import openpyxl
 import pandas as pd
+from io import BytesIO
 
 # Define the categories and their corresponding percentages
 categories = [
@@ -93,25 +94,13 @@ for i in range(len(questions)):
     sheet.cell(row=i+1, column=1, value=questions[i])
     sheet.cell(row=i+1, column=2, value=answers[i])
 
-# Save the Excel file
-workbook.save("results.xlsx")
+# Save the workbook to a buffer object
+buffer = BytesIO()
+workbook.save(buffer)
+buffer.seek(0)
 
-# Read the results from the Excel file into a pandas dataframe
-df = pd.read_excel("results.xlsx")
+# Read the data from the buffer into a pandas dataframe
+spending_df =pd.read_excel(buffer)
 
-# Extract the spending amounts from the dataframe
-spending_df = df.iloc[10:50, :]
-spending_df.columns = ["Category", "Spending Amount"]
-
-# Create a pie chart to visualize the spending breakdown by category
-pie_chart = spending_df.plot.pie(y="Spending Amount", labels=spending_df["Category"], legend=False, autopct='%1.1f%%')
-pie_chart.set_ylabel("")
-
-# Create a bar chart to compare the actual spending amounts to the allocated percentages
-bar_chart = spending_df.plot.bar(x="Category", y=["Spending Amount", "Percentage"], legend=False)
-bar_chart.set_ylabel("Amount ($)")
-bar_chart.set_ylim([0, max(spending_df["Spending Amount"]) * 1.2])
-
-# Save the charts to separate image files
-pie_chart.figure.savefig("pie_chart.png")
-bar_chart.figure.savefig("bar_chart.png")
+# Display the dataframe
+print(spending_df)
